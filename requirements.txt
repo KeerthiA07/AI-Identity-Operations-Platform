@@ -1,0 +1,4 @@
+# Core project uses Python standard library only.
+# Optional:
+# msal
+# requests

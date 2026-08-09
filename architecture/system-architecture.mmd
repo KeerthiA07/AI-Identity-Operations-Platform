@@ -1,0 +1,13 @@
+flowchart TD
+    A[HR / IAM / ITSM Request] --> B[Identity Context]
+    B --> C[Access Analysis]
+    B --> D[Risk Analysis]
+    C --> E[AI Recommendation]
+    D --> E
+    E --> F[Deterministic Policy Engine]
+    F -->|APPROVE| G[Human Approval]
+    F -->|REVIEW| G
+    F -->|BLOCK| H[Escalation]
+    G --> I[Graph / PowerShell]
+    I --> J[Microsoft Entra ID]
+    J --> K[Audit Evidence]

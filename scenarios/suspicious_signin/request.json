@@ -1,0 +1,19 @@
+{
+  "scenario": "SUSPICIOUS_SIGNIN",
+  "request_id": "ITDR-001",
+  "user": {
+    "id": "LAB-USER-SEC01",
+    "department": "Security",
+    "job_title": "Security Analyst"
+  },
+  "requested_access": {
+    "application": "LAB-APP-SECURITY",
+    "access_level": "Standard"
+  },
+  "manager_approved": true,
+  "signals": [
+    "impossible_travel",
+    "multiple_failed_signins",
+    "unexpected_privileged_activation"
+  ]
+}

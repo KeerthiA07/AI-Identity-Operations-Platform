@@ -1,0 +1,14 @@
+{
+  "id": "LAB-USER-FIN01",
+  "display_name": "Finance Lab User",
+  "user_principal_name": "lab-user-fin01@example.com",
+  "department": "Finance",
+  "job_title": "Finance Analyst",
+  "account_enabled": true,
+  "groups": [
+    "Finance-Users",
+    "Finance-Reporting"
+  ],
+  "directory_roles": [],
+  "applications": []
+}

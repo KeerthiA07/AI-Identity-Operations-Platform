@@ -1,0 +1,15 @@
+{
+  "scenario": "JOINER",
+  "request_id": "JML-JOIN-001",
+  "event": {
+    "event_type": "joiner",
+    "user_id": "LAB-USER-NEW01",
+    "department": "Finance",
+    "job_title": "Finance Analyst"
+  },
+  "requested_access": {
+    "application": "LAB-APP-FINANCE",
+    "access_level": "Standard"
+  },
+  "manager_approved": true
+}

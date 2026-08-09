@@ -1,0 +1,15 @@
+{
+  "scenario": "MOVER",
+  "request_id": "JML-MOVE-001",
+  "event": {
+    "event_type": "mover",
+    "user_id": "LAB-USER-FIN01",
+    "old_department": "Finance",
+    "new_department": "HR"
+  },
+  "requested_access": {
+    "application": "LAB-APP-HR",
+    "access_level": "Standard"
+  },
+  "manager_approved": true
+}

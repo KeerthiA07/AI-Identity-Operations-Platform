@@ -1,0 +1,14 @@
+{
+  "request_id": "REQ-001",
+  "user": {
+    "id": "LAB-USER-FIN01",
+    "department": "Finance",
+    "job_title": "Finance Analyst"
+  },
+  "requested_access": {
+    "application": "LAB-APP-FINANCE",
+    "access_level": "Standard"
+  },
+  "request_reason": "Employee requires access to perform finance reporting activities.",
+  "manager_approved": true
+}

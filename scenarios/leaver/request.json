@@ -1,0 +1,14 @@
+{
+  "scenario": "LEAVER",
+  "request_id": "JML-LEAVE-001",
+  "event": {
+    "event_type": "leaver",
+    "user_id": "LAB-USER-FIN01",
+    "termination_confirmed": true
+  },
+  "requested_access": {
+    "application": "LAB-APP-FINANCE",
+    "access_level": "Standard"
+  },
+  "manager_approved": true
+}
