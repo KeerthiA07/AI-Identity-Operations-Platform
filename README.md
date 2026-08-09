@@ -1,238 +1,468 @@
-# AI-Powered Identity Operations & JML Automation Platform
+# AI-Powered Identity Security Operations Platform
 
-## Portfolio positioning
+> An identity-security decision and automation platform built around Microsoft Entra ID that combines identity context, entitlement analysis, deterministic policy evaluation, risk detection, AI-assisted recommendations, JML workflows, and human-controlled automation.
 
-A security-controlled identity operations platform that combines Microsoft
-Entra identity context, deterministic IAM policy evaluation, risk analysis,
-AI-assisted recommendations, JML workflows and controlled automation.
-
-**Primary implementation:** Microsoft Entra ID + Microsoft Graph + Python +
-PowerShell.
-
-**Supporting concepts:** IGA, JML, RBAC, least privilege, PIM, ITDR, ITSM,
-human-in-the-loop approval.
-
-> AI is advisory. The deterministic policy engine remains the authorization
-> control. Identity-changing actions require human approval.
+![Microsoft Entra ID](https://img.shields.io/badge/Microsoft%20Entra%20ID-Identity%20Security-blue)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![PowerShell](https://img.shields.io/badge/PowerShell-Automation-blue)
+![Microsoft Graph](https://img.shields.io/badge/Microsoft%20Graph-API-blue)
+![Tests](https://img.shields.io/badge/Tests-10%2F10-success)
 
 ---
 
-## 1. Business problem
+## Why I built this
 
-Enterprise IAM teams frequently process access requests and JML events using
-manual checks. This creates:
-- excessive access accumulation
-- inconsistent approvals
-- delayed provisioning/deprovisioning
-- weak audit evidence
-- difficult identity investigations
+Traditional IAM operations often require analysts to manually correlate:
 
-This project demonstrates a controlled workflow that turns an identity request
-into an explainable risk decision and a proposed action.
+- user identity information
+- department and job role
+- existing groups and entitlements
+- privileged roles
+- requested application access
+- approval status
+- suspicious identity activity
+
+This creates opportunities for excessive access, inconsistent decisions,
+slow JML processing and weak auditability.
+
+This project demonstrates how those signals can be combined into a controlled
+identity-security decision pipeline.
 
 ---
 
-## 2. Architecture
+# Core idea
 
 ```text
-HR / IAM Request
-      |
-      v
-Identity Context -----> Microsoft Graph / Entra
-      |
-      v
-Access Analysis + Risk Analysis
-      |
-      v
-AI Recommendation
-      |
-      v
-Deterministic Policy Engine
-      |
-      +------ APPROVE
-      +------ REVIEW
-      +------ BLOCK
-      |
-      v
-Human Approval
-      |
-      v
-Controlled Graph / PowerShell Automation
-      |
-      v
-Entra ID
-      |
-      v
-Audit Evidence
-```
+Microsoft Entra ID
+       |
+       v
+Identity Context
+       |
+       v
+Entitlement Analysis
+       |
+       v
+Risk Analysis
+       |
+       +----------------+
+       |                |
+       v                v
+Policy Engine       AI Analysis
+       |                |
+       +-------+--------+
+               |
+               v
+       Security Decision
+               |
+       +-------+-------+
+       |       |       |
+     APPROVE REVIEW  BLOCK
+               |
+               v
+       Human Approval
+               |
+               v
+    Controlled Automation
+               |
+               v
+        Entra ID / Graph
+Security design principle
 
----
+AI is advisory. It does not authorize identity changes.
 
-## 3. Security controls
+The deterministic policy engine remains the authorization control.
 
-- Least privilege
-- Fail-closed behavior for unknown applications
-- Separation of AI recommendation from authorization
-- Human-in-the-loop approval
-- Explicit privileged-access blocking
-- Read-only Graph enrichment before write automation
-- Dry-run default for PowerShell actions
-- No secrets in source control
-- Structured JSON decisions for auditability
+Identity-changing actions require human approval.
 
----
+This prevents a probabilistic AI component from becoming the security boundary.
 
-## 4. JML use cases
+What the platform can detect
+1. Normal access request
 
-### Joiner
-Validate the employee, derive baseline access, request approval, then provision
-only approved entitlements.
+Example:
 
-### Mover
-Compare old and new business context, identify stale access, remove
-unnecessary entitlements and grant approved new access.
+User Department : Finance
+Application     : LAB-APP-FINANCE
+Access Level    : Standard
+Manager Approval: Present
 
-### Leaver
-Confirm termination, disable identity/revoke sessions through an approved
-workflow, remove access and record evidence.
+Result:
 
----
+Decision   : APPROVE
+Risk       : LOW
+Risk Score : 0
+Action     : GRANT_APPLICATION_ACCESS
+2. Department/application mismatch
 
-## 5. Identity security use cases
+Example:
 
-### Access request
-Department + application + approval + existing entitlements -> policy decision.
+User Department : Finance
+Application     : LAB-APP-HR
 
-### Excessive access
-Detect high group/application counts and privileged roles.
+Result:
 
-### Identity incident
-Use suspicious sign-in / privilege signals as investigation context.
+Decision   : REVIEW
+Risk       : MEDIUM
+Risk Score : 40
+Action     : PERFORM_ACCESS_REVIEW
 
-### Access review
-Use existing entitlements and business context to recommend KEEP/REMOVE/REVIEW.
+Reason:
 
----
+User department 'Finance' does not match application department 'HR'.
+Application is classified as high sensitivity.
 
-## 6. Repository structure
+This demonstrates business-context-aware access control rather than simply
+checking whether a user requested access.
 
-```text
-ai/                    AI prompts and decision schema
-architecture/           Architecture, threat model and portfolio diagrams
-automation/             Graph client and PowerShell workflows
-data/                   Synthetic lab data
-engine/                 Policy, context, access and risk engines
-reports/                Generated evidence
-scenarios/              JML and identity-risk scenarios
-tests/                  Automated tests
-run_platform.py         End-to-end offline runner
-```
+3. Excessive access
 
----
+The platform can identify combinations such as:
 
-## 7. Run the project locally
+Privileged directory role
+        +
+Existing application access
+        +
+Cross-department entitlements
 
-Python 3.10+ recommended.
+Example result:
 
-```powershell
-python run_platform.py
-```
+Decision   : REVIEW
+Risk       : HIGH
+Risk Score : 50
+Action     : PERFORM_ACCESS_REVIEW
 
-Run unit tests:
+The access-review engine can classify entitlements as:
 
-```powershell
+KEEP
+REVIEW
+
+based on identity and business context.
+
+4. Identity threat detection context
+
+The ITDR scenario combines signals such as:
+
+Impossible travel
+Multiple failed sign-ins
+Unexpected privileged activation
+
+Example:
+
+Risk Score : 90
+Risk Level : CRITICAL
+
+Recommended investigation includes reviewing:
+
+privileged role activation
+sign-in locations
+authentication failures
+authentication methods
+possible session revocation
+JML automation
+
+The platform includes Joiner, Mover and Leaver scenarios.
+
+Joiner
+Employee joins
+     ↓
+Validate identity
+     ↓
+Determine baseline access
+     ↓
+Human approval
+     ↓
+Provision approved access
+Mover
+Department changes
+     ↓
+Compare previous/current context
+     ↓
+Identify stale entitlements
+     ↓
+Review removal/addition
+     ↓
+Human approval
+Leaver
+Termination
+     ↓
+Confirm identity
+     ↓
+Disable/revoke workflow
+     ↓
+Human approval
+     ↓
+Record evidence
+Real Microsoft Entra ID integration
+
+The platform was tested against a Microsoft Entra lab tenant using Microsoft Graph.
+
+The real identity context included:
+
+User:
+LAB-USER-FIN01
+
+Department:
+Finance
+
+Job Title:
+Finance Analyst
+
+Groups:
+LAB-SG-FINANCE
+LAB-DG-FINANCE-USERS
+LAB-SG-CA-PILOT
+
+Administrative Unit:
+LAB-AU-BANGALORE
+
+The identity context is normalized before being passed to the security
+decision pipeline.
+
+The live integration is intentionally read-oriented and separated from the
+decision engine.
+
+Security architecture
+
+The platform follows several security principles:
+
+Least privilege
+Fail-closed behavior
+Human-in-the-loop approval
+Separation of AI recommendation and authorization
+Privileged-access detection
+Read-only identity enrichment before write automation
+Dry-run automation by default
+Structured decision records
+No secrets committed to source control
+Technology stack
+Area	Technology
+Identity	Microsoft Entra ID
+Identity API	Microsoft Graph
+Core engine	Python
+Automation	PowerShell
+AI layer	Structured AI analysis + deterministic fallback
+IAM	IAM / IGA / JML
+Security	Least Privilege / PIM / ITDR concepts
+Testing	Python unittest
+Version control	Git / GitHub
+Project architecture
+ai/
+    AI analysis, prompts and decision schema
+
+architecture/
+    System architecture
+    Data flow
+    Threat model
+    Design decisions
+    Demo runbook
+    Portfolio case study
+
+automation/
+    Microsoft Graph automation
+    PowerShell JML workflows
+
+engine/
+    Identity context
+    Access analysis
+    Risk analysis
+    Policy engine
+    JML engine
+    ITDR engine
+    Access review
+
+integrations/
+    Microsoft Entra integration
+    Graph client
+    Identity normalization
+    Real-tenant runners
+
+scenarios/
+    Joiner
+    Mover
+    Leaver
+    Excessive access
+    Suspicious sign-in
+
+tests/
+    Policy tests
+    Scenario tests
+    End-to-end tests
+Validation
+
+The automated test suite currently validates:
+
+10 tests
+10 passed
+0 failed
+
+Validated scenarios include:
+
+Valid Finance access request
+Department mismatch
+Missing manager approval
+Privileged request
+Unknown application
+End-to-end offline pipeline
+ITDR high-risk scenario
+Joiner
+Mover
+Leaver
+
+Run:
+
 python -m unittest discover -s tests -v
-```
+Running the platform
+Offline mode
 
-Run the policy engine directly:
+No external API or LLM is required.
 
-```powershell
-python engine\policy_engine.py
-```
+python run_platform.py
+Scenario testing
+python run_scenario.py joiner
+python run_scenario.py mover
+python run_scenario.py leaver
+python run_scenario.py excessive_access
+python run_scenario.py suspicious_signin
+Microsoft Entra mode
 
-No external API key is required for the offline mode.
+The live identity pipeline can collect and normalize identity context from
+Microsoft Entra ID through Microsoft Graph.
 
----
+Example:
 
-## 8. Microsoft Graph mode
+python integrations\entra\run_real_platform.py USER_UPN
 
-The Graph client is intentionally separated from the local decision engine.
+Example application test:
 
-Use a lab token only through an environment variable:
+python integrations\entra\run_real_platform.py USER_UPN LAB-APP-HR
+AI security model
 
-```powershell
-$env:GRAPH_ACCESS_TOKEN="..."
-```
+The AI layer is deliberately constrained.
 
-Then use `automation/graph/graph_client.py`.
+Identity Context
+      ↓
+Security Analysis
+      ↓
+AI Recommendation
+      ↓
+Deterministic Policy Engine
+      ↓
+Human Approval
+      ↓
+Automation
 
-Start with read-only identity enrichment. Do not grant broad write permissions
-until the complete workflow has been validated.
+The AI component can recommend:
 
----
+decision
+risk level
+reasoning
+recommended action
+investigation guidance
 
-## 9. AI mode
+It cannot independently authorize an identity change.
 
-Without an LLM configuration, the project uses a deterministic fallback so the
-demo remains reproducible.
+If the AI provider is unavailable, the platform uses a deterministic fallback so
+the security workflow remains reproducible.
 
-Optional provider configuration:
+Threat model considerations
+
+The architecture considers risks including:
+
+excessive privilege
+privilege accumulation
+unauthorized application access
+suspicious sign-ins
+AI recommendation misuse
+accidental identity modification
+credential exposure
+over-permissioned automation
+
+The project intentionally separates:
+
+Analysis
+   ≠
+Authorization
+   ≠
+Execution
+
+This separation is a core security control.
+
+Important limitations
+
+This is a portfolio/lab implementation, not a production IAM platform.
+
+Production deployment would require additional controls such as:
+
+enterprise secrets management
+centralized logging/SIEM integration
+ITSM approval integration
+stronger authorization boundaries
+retry and idempotency controls
+production-grade identity governance
+formal access certification workflows
+comprehensive monitoring and alerting
+
+Live identity-changing operations are intentionally not enabled by default.
+
+Portfolio value
+
+This project demonstrates practical experience across:
+
+Identity Security
+
+Microsoft Entra ID
+IAM
+IGA concepts
+JML
+RBAC
+Least Privilege
+Privileged access
+ITDR
+
+Security Engineering
+
+Policy-as-code
+Risk scoring
+Security decision pipelines
+Fail-closed design
+Human approval controls
+Auditability
+
+Automation
+
+Microsoft Graph
+Python
+PowerShell
+Structured JSON workflows
+
+AI Security
+
+AI-assisted analysis
+Deterministic authorization
+Human-in-the-loop AI
+AI failure fallback
+30-second interview explanation
+
+I built an AI-assisted identity security operations platform around Microsoft Entra ID. It collects real identity context through Microsoft Graph, analyzes existing entitlements and requested access, evaluates risk and business policy, and produces an explainable security decision. AI is used only for analysis and recommendation; authorization remains deterministic and identity-changing actions require human approval. I also implemented JML, excessive-access and ITDR scenarios and validated the platform with automated tests.
+
+Security note
+
+Never commit:
+
+.env
+access tokens
+client secrets
+API keys
+certificates
+real employee identities
+production tenant information
+
+Use synthetic lab identities and environment variables for credentials.
+
+
+## Step 2 — Save it
+
+Open:
 
 ```text
-LLM_API_URL=
-LLM_API_KEY=
-LLM_MODEL=
-```
-
-The AI output must remain structured and cannot override the policy engine.
-
----
-
-## 10. Interview explanation
-
-### 30-second answer
-
-> "I designed an AI-assisted identity operations platform around Microsoft
-> Entra ID. It enriches access requests with identity context, analyzes current
-> entitlements and risk, produces an explainable AI recommendation, and then
-> passes the recommendation through a deterministic policy engine. Only after
-> human approval can a controlled Graph or PowerShell workflow make an identity
-> change. I deliberately separated AI from authorization so the system follows
-> least privilege, fail-closed behavior and auditability."
-
-### Why not let AI directly provision access?
-
-> "Because an LLM is probabilistic. Authorization needs deterministic controls.
-> I use AI for analysis and recommendations, while the policy engine and human
-> approval remain the security boundary."
-
----
-
-## 11. Portfolio evidence to capture
-
-Capture:
-1. Architecture diagram
-2. Entra lab configuration
-3. Graph read result
-4. Access request input
-5. Policy decision
-6. AI recommendation
-7. Human approval state
-8. JML Joiner/Mover/Leaver runs
-9. Excessive-access detection
-10. Audit report
-11. Automated test results
-12. GitHub repository structure
-
-Do not publish real tenant IDs, UPNs, tokens, certificates or company data.
-Use synthetic lab identities.
-
----
-
-## 12. Limitations
-
-This repository contains a safe, offline-first implementation. Live Entra
-writes and an external LLM are intentionally not enabled by default. The
-production version would add stronger secrets management, approval/ITSM
-integration, centralized logging, retry/idempotency controls and formal
-access-governance workflows.
+README.md
