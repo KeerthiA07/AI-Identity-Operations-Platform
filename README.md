@@ -1,375 +1,264 @@
-# AI-Powered Identity Security Operations Platform
+# AI Identity Operations Platform
 
-> An identity-security decision and automation platform built around Microsoft Entra ID that combines identity context, entitlement analysis, deterministic policy evaluation, risk detection, AI-assisted recommendations, JML workflows, and human-controlled automation.
+An AI-assisted Identity Security Operations Platform designed to analyze identity activity, detect security risks, correlate identity-related events, and provide explainable security analysis.
+
+The project demonstrates how identity security operations can combine deterministic detection, event correlation, risk analysis, and AI-assisted investigation into a structured security workflow.
 
 ---
 
-## 1. Why I Built This
+## Architecture
 
-Traditional IAM operations often require analysts to manually correlate:
+![AI Identity Operations Platform Architecture](architecture/architecture.png)
 
-- User identity and business context
-- Department and job role
-- Existing groups and entitlements
-- Privileged directory roles
-- Requested application access
-- Manager approval
+The platform follows a modular identity-security pipeline:
+
+```text
+Identity / Security Events
+            |
+            v
+      Event Processing
+            |
+            v
+     Detection Engine
+            |
+            v
+    Correlation Engine
+            |
+            v
+      Risk Analysis
+            |
+            v
+   AI-Assisted Analysis
+            |
+            v
+   Security Findings
+            |
+            v
+ Investigation / Response
+```
+
+The architecture separates event detection, correlation, analysis, and response so that security decisions remain explainable and controllable.
+
+---
+
+# Core Capabilities
+
+## Identity Security Detection
+
+The platform analyzes identity-related events and identifies security-relevant conditions.
+
+Examples include:
+
 - Suspicious identity activity
-
-This can lead to excessive access, inconsistent decisions, slow JML processing, and weak auditability.
-
-This project demonstrates a controlled identity-security pipeline that combines these signals into an explainable security decision.
-
----
-
-## 2. Core Architecture
-
-```text
-                    Microsoft Entra ID
-                           |
-                           v
-                  Identity Context
-                           |
-                           v
-                 Entitlement Analysis
-                           |
-                           v
-                     Risk Analysis
-                           |
-                 +---------+---------+
-                 |                   |
-                 v                   v
-           Policy Engine         AI Analysis
-                 |                   |
-                 +---------+---------+
-                           |
-                           v
-                  Security Decision
-                           |
-              +------------+------------+
-              |            |            |
-           APPROVE       REVIEW       BLOCK
-                           |
-                           v
-                   Human Approval
-                           |
-                           v
-                Controlled Automation
-                           |
-                           v
-                    Entra ID / Graph
-```
-
-### Security Design Principle
-
-**AI is advisory. It does not authorize identity changes.**
-
-The deterministic policy engine remains the authorization control, while identity-changing actions require human approval.
+- Risky authentication behavior
+- Excessive or abnormal access
+- Identity-related security anomalies
+- Multiple related security events
+- High-risk identity activity
 
 ---
 
-# 3. What the Platform Can Detect
+## Event Correlation
 
-## 3.1 Normal Access Request
+Individual identity events may not always indicate a security problem by themselves.
 
-Example:
-
-```text
-User Department  : Finance
-Application      : LAB-APP-FINANCE
-Access Level     : Standard
-Manager Approval : Present
-```
-
-Result:
+The correlation layer connects related events and evaluates them together.
 
 ```text
-Decision   : APPROVE
-Risk       : LOW
-Risk Score : 0
-Action     : GRANT_APPLICATION_ACCESS
+Event 1
+  |
+Event 2
+  |
+Event 3
+  |
+  v
+Correlation Engine
+  |
+  v
+Combined Identity Risk
 ```
 
-## 3.2 Department / Application Mismatch
+This allows the platform to identify patterns that would be difficult to detect by examining isolated events.
 
-Example:
+### Correlation Evidence
 
-```text
-User Department : Finance
-Application     : LAB-APP-HR
-```
-
-Result:
-
-```text
-Decision   : REVIEW
-Risk       : MEDIUM
-Risk Score : 40
-Action     : PERFORM_ACCESS_REVIEW
-```
-
-Reason:
-
-> User department `Finance` does not match application department `HR`.
-
-The application is also classified as high sensitivity.
-
-## 3.3 Excessive Access
-
-The platform detects combinations such as:
-
-```text
-Privileged Directory Role
-          +
-Existing Application Access
-          +
-Cross-Department Entitlements
-```
-
-Example result:
-
-```text
-Decision   : REVIEW
-Risk       : HIGH
-Risk Score : 50
-Action     : PERFORM_ACCESS_REVIEW
-```
-
-The access-review engine can classify entitlements as:
-
-- `KEEP`
-- `REVIEW`
-
-## 3.4 Identity Threat Detection Context
-
-The ITDR scenario combines:
-
-- Impossible travel
-- Multiple failed sign-ins
-- Unexpected privileged activation
-
-Example:
-
-```text
-Risk Score : 90
-Risk Level : CRITICAL
-```
-
-Recommended investigation areas include:
-
-- Privileged role activation
-- Sign-in locations
-- Authentication failures
-- Authentication methods
-- Possible session revocation
+![Correlation Engine Evidence](evidence/correlation.png)
 
 ---
 
-# 4. JML Automation
+# Detection Engine
 
-The platform includes **Joiner, Mover, and Leaver** scenarios.
+The detection engine evaluates normalized identity/security events against defined detection logic.
 
-### Joiner
-
-```text
-Employee joins
-     |
-     v
-Validate identity
-     |
-     v
-Determine baseline access
-     |
-     v
-Human approval
-     |
-     v
-Provision approved access
-```
-
-### Mover
+The output contains structured security findings rather than raw events.
 
 ```text
-Department changes
+Input Event
      |
      v
-Compare previous/current context
+Detection Rules
      |
      v
-Identify stale entitlements
+Security Signal
      |
      v
-Review removal/addition
-     |
-     v
-Human approval
+Finding
 ```
 
-### Leaver
+The detection layer is deterministic and designed to provide explainable results.
 
-```text
-Termination
-     |
-     v
-Confirm identity
-     |
-     v
-Disable / revoke workflow
-     |
-     v
-Human approval
-     |
-     v
-Record evidence
-```
+### Detection Evidence
+
+![Detection Result](evidence/detection-result.png)
 
 ---
 
-# 5. Real Microsoft Entra ID Integration
+# Risk and Security Analysis
 
-The platform was tested against a **Microsoft Entra lab tenant using Microsoft Graph**.
+Detected events are evaluated to determine their security significance.
 
-The real identity context included a synthetic lab identity with:
+The platform can produce structured findings containing information such as:
 
-```text
-Department : Finance
-Job Title  : Finance Analyst
-```
+- Finding type
+- Identity involved
+- Risk level
+- Security reason
+- Supporting event information
+- Recommended investigation direction
 
-Example lab entitlements:
-
-```text
-LAB-SG-FINANCE
-LAB-DG-FINANCE-USERS
-LAB-SG-CA-PILOT
-```
-
-Administrative Unit:
-
-```text
-LAB-AU-BANGALORE
-```
-
-The identity context is normalized before being passed to the security decision pipeline.
-
-The live integration is intentionally read-oriented and separated from the decision engine.
-
-> Real tenant identifiers, tokens, credentials, and personal/company data should not be published.
+The goal is to transform raw identity activity into an analyst-friendly security result.
 
 ---
 
-# 6. Security Architecture
+# AI-Assisted Security Operations
 
-| Control | Implementation |
-|---|---|
-| Least privilege | Business context and existing entitlements are evaluated |
-| Fail-closed | Unknown applications are not automatically approved |
-| Human-in-the-loop | Identity-changing actions require approval |
-| AI separation | AI recommendations cannot authorize access |
-| Privileged-access detection | Existing privileged roles increase risk |
-| Read-first design | Entra enrichment is separated from write automation |
-| Dry-run automation | PowerShell workflows default to safe execution |
-| Auditability | Decisions are represented as structured JSON |
-| Secret protection | Credentials are excluded from source control |
-
----
-
-# 7. Technology Stack
-
-| Area | Technology |
-|---|---|
-| Identity | Microsoft Entra ID |
-| Identity API | Microsoft Graph |
-| Core Engine | Python |
-| Automation | PowerShell |
-| AI Layer | Structured AI analysis + deterministic fallback |
-| IAM | IAM / IGA / JML |
-| Security | Least Privilege / PIM / ITDR concepts |
-| Testing | Python `unittest` |
-| Version Control | Git / GitHub |
-
----
-
-# 8. Project Structure
+The AI layer is designed to assist security analysis rather than blindly perform identity changes.
 
 ```text
-AI-Identity-Operations-Platform/
-|
-+-- ai/
-|   +-- AI analysis
-|   +-- prompts
-|   +-- decision schema
-|
-+-- architecture/
-|   +-- system architecture
-|   +-- data flow
-|   +-- threat model
-|   +-- design decisions
-|   +-- demo runbook
-|   +-- portfolio case study
-|
-+-- automation/
-|   +-- Microsoft Graph automation
-|   +-- PowerShell JML workflows
-|
-+-- engine/
-|   +-- identity context
-|   +-- access analysis
-|   +-- risk analysis
-|   +-- policy engine
-|   +-- JML engine
-|   +-- ITDR engine
-|   +-- access review
-|
-+-- integrations/
-|   +-- Microsoft Entra integration
-|   +-- Graph client
-|   +-- identity normalization
-|   +-- real-tenant runners
-|
-+-- scenarios/
-|   +-- Joiner
-|   +-- Mover
-|   +-- Leaver
-|   +-- Excessive access
-|   +-- Suspicious sign-in
-|
-+-- tests/
-|   +-- policy tests
-|   +-- scenario tests
-|   +-- end-to-end tests
-|
-+-- run_platform.py
-+-- run_scenario.py
-+-- README.md
+Identity Events
+      |
+      v
+Detection
+      |
+      v
+Correlation
+      |
+      v
+Risk Context
+      |
+      v
+AI-Assisted Analysis
+      |
+      v
+Security Recommendation
 ```
+
+AI can assist with:
+
+- Understanding security findings
+- Summarizing identity activity
+- Explaining why an event is risky
+- Supporting investigation
+- Recommending next investigation steps
+
+The underlying detection and correlation logic remains deterministic.
 
 ---
 
-# 9. Validation
+# Security Design Principle
 
-The automated test suite validates the core security workflow.
-
-Current validation:
+The platform separates:
 
 ```text
-10 tests
-10 passed
-0 failed
+Detection
+    !=
+Analysis
+    !=
+Authorization
+    !=
+Execution
 ```
 
-Validated scenarios include:
+AI is therefore treated as an **assistance and analysis layer**, not as an unrestricted identity-authority mechanism.
 
-- Valid Finance access request
-- Department mismatch
-- Missing manager approval
-- Privileged request
-- Unknown application
-- End-to-end offline pipeline
-- ITDR high-risk scenario
-- Joiner
-- Mover
-- Leaver
+This is important because identity-security decisions should remain explainable, auditable, and subject to appropriate controls.
+
+---
+
+# Platform Execution
+
+Run the complete platform with:
+
+```powershell
+python run_platform.py
+```
+
+The execution demonstrates the complete processing pipeline from input events through detection, correlation, analysis, and final security output.
+
+### Execution Evidence
+
+![Platform Execution](evidence/execution.png)
+
+---
+
+# Correlation Flow
+
+The correlation engine connects related identity-security signals before producing the final security assessment.
+
+```text
+Raw Events
+    |
+    v
+Normalized Events
+    |
+    v
+Identity Context
+    |
+    v
+Related Events
+    |
+    v
+Correlation
+    |
+    v
+Security Finding
+```
+
+### Correlation Execution
+
+![Correlation Evidence](evidence/correlation.png)
+
+---
+
+# Detection Results
+
+The detection engine produces structured results from the processed identity events.
+
+```text
+Input
+  |
+  v
+Detection Rules
+  |
+  v
+Matched Condition
+  |
+  v
+Finding
+  |
+  v
+Risk Context
+```
+
+### Detection Result
+
+![Detection Result](evidence/detection-result.png)
+
+---
+
+# Testing
+
+The project includes automated tests for validating the implemented platform components.
 
 Run:
 
@@ -377,279 +266,206 @@ Run:
 python -m unittest discover -s tests -v
 ```
 
+The test suite validates the core detection, correlation, and platform behavior.
+
+### Test Results
+
+![Automated Test Results](evidence/test-results.png)
+
 ---
 
-# 10. Running the Platform
+# Evidence
 
-## Offline Mode
+The repository contains execution evidence for the major platform components.
 
-No external API or LLM is required.
+```text
+evidence/
+│
+├── correlation.png
+├── detection-result.png
+├── execution.png
+└── test-results.png
+```
+
+These screenshots demonstrate:
+
+| Evidence | Purpose |
+|---|---|
+| `execution.png` | Complete platform execution |
+| `detection-result.png` | Detection engine output |
+| `correlation.png` | Correlation engine output |
+| `test-results.png` | Automated validation |
+
+---
+
+# Project Structure
+
+```text
+AI-Identity-Operations-Platform/
+│
+├── architecture/
+│   └── architecture.png
+│
+├── evidence/
+│   ├── correlation.png
+│   ├── detection-result.png
+│   ├── execution.png
+│   └── test-results.png
+│
+├── data/
+│
+├── engine/
+│
+├── scenarios/
+│
+├── tests/
+│
+├── run_platform.py
+├── requirements.txt
+└── README.md
+```
+
+---
+
+# Running the Project
+
+## Install Dependencies
+
+```powershell
+pip install -r requirements.txt
+```
+
+## Run the Platform
 
 ```powershell
 python run_platform.py
 ```
 
-## Scenario Testing
+## Run Tests
 
 ```powershell
-python run_scenario.py joiner
-python run_scenario.py mover
-python run_scenario.py leaver
-python run_scenario.py excessive_access
-python run_scenario.py suspicious_signin
-```
-
-## Microsoft Entra Mode
-
-The live identity pipeline collects and normalizes identity context from Microsoft Entra ID through Microsoft Graph.
-
-```powershell
-python integrations\entra\run_real_platform.py USER_UPN
-```
-
-Test a specific application:
-
-```powershell
-python integrations\entra\run_real_platform.py USER_UPN LAB-APP-HR
+python -m unittest discover -s tests -v
 ```
 
 ---
 
-# 11. AI Security Model
+# Security Approach
 
-The AI layer is deliberately constrained.
+The platform follows a controlled security-analysis model.
 
 ```text
-Identity Context
+Identity Activity
        |
        v
-Security Analysis
+Detection
        |
        v
-AI Recommendation
+Correlation
        |
        v
-Deterministic Policy Engine
+Risk Context
        |
        v
-Human Approval
+AI-Assisted Analysis
        |
        v
-Automation
+Security Finding
+       |
+       v
+Human Investigation
 ```
 
-The AI component can recommend:
-
-- Decision
-- Risk level
-- Reasoning
-- Recommended action
-- Investigation guidance
-
-It **cannot independently authorize an identity change**.
-
-If the AI provider is unavailable, the platform uses a deterministic fallback so the workflow remains reproducible.
+The system is designed to support security analysts rather than replace security governance controls.
 
 ---
 
-# 12. Threat Model
+# Technology
 
-The architecture considers:
-
-- Excessive privilege
-- Privilege accumulation
-- Unauthorized application access
-- Suspicious sign-ins
-- AI recommendation misuse
-- Accidental identity modification
-- Credential exposure
-- Over-permissioned automation
-
-A core design separation is:
-
-```text
-Analysis
-   !=
-Authorization
-   !=
-Execution
-```
-
-This separation is a primary security control.
-
----
-
-# 13. Production Limitations
-
-This is a **portfolio/lab implementation**, not a production IAM platform.
-
-A production deployment would require:
-
-- Enterprise secrets management
-- Centralized logging and SIEM integration
-- ITSM approval integration
-- Stronger authorization boundaries
-- Retry and idempotency controls
-- Production-grade identity governance
-- Formal access certification workflows
-- Comprehensive monitoring and alerting
-
-Live identity-changing operations are intentionally not enabled by default.
-
----
-
-# 14. Portfolio Value
-
-### Identity Security
-
-- Microsoft Entra ID
-- IAM
-- IGA concepts
-- JML
-- RBAC
-- Least privilege
-- Privileged access
-- ITDR
-
-### Security Engineering
-
-- Policy-as-code
-- Risk scoring
-- Security decision pipelines
-- Fail-closed design
-- Human approval controls
-- Auditability
-
-### Automation
-
-- Microsoft Graph
-- Python
-- PowerShell
-- Structured JSON workflows
-
-### AI Security
-
-- AI-assisted security analysis
-- Deterministic authorization
-- Human-in-the-loop AI
-- AI failure fallback
-
----
-
-# 15. 30-Second Interview Explanation
-
-> I built an AI-assisted identity security operations platform around Microsoft Entra ID. It collects identity context through Microsoft Graph, analyzes existing entitlements and requested access, evaluates risk and business policy, and produces an explainable security decision. AI is used only for analysis and recommendation; authorization remains deterministic, and identity-changing actions require human approval. I also implemented JML, excessive-access, access-review, and ITDR scenarios and validated the platform with automated tests.
-
-### Why Not Let AI Provision Access Directly?
-
-> An LLM is probabilistic, while authorization needs deterministic controls. I therefore use AI for analysis and recommendations, while the policy engine and human approval remain the security boundary.
-
----
-
-# 16. Portfolio Evidence
-
-Capture:
-
-1. Architecture diagram
-2. Entra lab configuration
-3. Microsoft Graph read result
-4. Access request input
-5. Policy decision
-6. AI recommendation
-7. Human approval state
-8. Joiner/Mover/Leaver runs
-9. Excessive-access detection
-10. Audit report
-11. Automated test results
-12. GitHub repository structure
-
-Use synthetic lab identities in screenshots.
-
-Do not publish:
-
-- Real tenant IDs
-- Access tokens
-- Client secrets
-- API keys
-- Certificates
-- Real employee identities
-- Production tenant information
-- Company-confidential data
-
----
-
-# 17. Security Notes
-
-Never commit:
-
-```text
-.env
-Access tokens
-Client secrets
-API keys
-Certificates
-Production identity data
-Company-confidential information
-```
-
-Use environment variables or a proper secrets-management solution for credentials.
-
----
-
-# 18. Project Status
-
-| Capability | Status |
+| Area | Technology |
 |---|---|
-| Offline policy engine | Complete |
-| Risk analysis | Complete |
-| AI recommendation | Complete |
-| JML scenarios | Complete |
-| ITDR scenario | Complete |
-| Excessive-access detection | Complete |
-| Microsoft Entra read integration | Complete |
-| Identity normalization | Complete |
-| Automated tests | Complete |
-| GitHub repository | Complete |
-| Live identity-changing automation | Intentionally disabled |
+| Language | Python |
+| Domain | Identity Security |
+| Identity Operations | IAM / Identity Security |
+| Detection | Deterministic Detection Engine |
+| Correlation | Identity Event Correlation |
+| AI | AI-Assisted Security Analysis |
+| Testing | Python `unittest` |
+| Documentation | Markdown |
+| Version Control | Git / GitHub |
 
 ---
 
-# 19. Next Development Phase
+# Security Considerations
 
-Planned improvements:
+This project is intended for laboratory, learning, and portfolio purposes.
 
-- GitHub Actions CI/CD
-- Structured audit evidence
-- Approval workflow simulation
-- ITSM integration
-- Centralized security logging
-- Stronger production authorization controls
-- Idempotent automation
-
----
-
-## Core Security Principle
+Do not commit:
 
 ```text
-Real Entra Identity Context
-          |
-          v
-Identity / Entitlement Analysis
-          |
-          v
-Risk + Policy Evaluation
-          |
-          v
-AI-Assisted Security Recommendation
-          |
-          v
-Human Approval
-          |
-          v
-Controlled Automation
-          |
-          v
-Audit Evidence
+Passwords
+API Keys
+Access Tokens
+Client Secrets
+Private Keys
+Certificates
+Production Credentials
+Real Employee Data
+Confidential Company Information
 ```
 
-The key differentiator is the separation of **analysis, authorization, and execution**.
+Synthetic or laboratory data should be used for demonstrations.
+
+The platform is designed to generate security findings and analysis. Identity-changing actions should remain protected by appropriate authorization and human approval controls.
+
+---
+
+# What This Project Demonstrates
+
+This project demonstrates practical understanding of:
+
+- Identity Security
+- IAM operations
+- Security event processing
+- Identity event detection
+- Event correlation
+- Risk analysis
+- Security findings
+- AI-assisted investigation
+- Explainable security analysis
+- Human-in-the-loop security
+- Python security engineering
+- Automated testing
+
+---
+
+# Interview Explanation
+
+> I built an AI-assisted Identity Operations Platform that processes identity-security events, applies deterministic detection logic, correlates related events, and generates explainable security findings. The AI layer is used to assist investigation and analysis rather than directly making unrestricted identity decisions. The platform is structured into separate detection, correlation, risk-analysis, and AI-assisted investigation layers, with automated tests validating the implementation.
+
+---
+
+# Key Security Principle
+
+```text
+Raw Identity Events
+        |
+        v
+Detection
+        |
+        v
+Correlation
+        |
+        v
+Risk Analysis
+        |
+        v
+AI-Assisted Investigation
+        |
+        v
+Explainable Security Finding
+        |
+        v
+Human-Controlled Response
+```
+
+The primary objective is to transform raw identity activity into **correlated, explainable, and actionable identity-security intelligence**.
