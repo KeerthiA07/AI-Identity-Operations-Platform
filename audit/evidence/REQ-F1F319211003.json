@@ -1,0 +1,29 @@
+{
+  "request_id": "REQ-F1F319211003",
+  "timestamp": "2026-08-09T19:02:12.479864+00:00",
+  "user": {
+    "display_name": "LAB-USER-FIN01",
+    "user_principal_name": "lab-user-fin01@example.com",
+    "department": "Finance"
+  },
+  "application": "LAB-APP-HR",
+  "requested_access": "Standard",
+  "risk": {
+    "level": "MEDIUM",
+    "score": 40
+  },
+  "policy_decision": "REVIEW",
+  "reasons": [
+    "User department does not match application department.",
+    "Application is classified as high sensitivity."
+  ],
+  "ai_recommendation": {
+    "decision": "REVIEW",
+    "risk": "MEDIUM"
+  },
+  "human_approval": {
+    "required": true,
+    "approved": false
+  },
+  "action": "PERFORM_ACCESS_REVIEW"
+}
